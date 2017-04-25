@@ -10,6 +10,9 @@ using std::vector;
 
 // Initializes Unscented Kalman filter
 UKF::UKF() {
+  // Variable to keep track of the previous timestamp
+  previous_timestamp_ = 0;
+
   // If this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
@@ -62,6 +65,73 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   Complete this function! Make sure you switch between lidar and radar
   measurements.
   */
+
+  // Check if the initialization is done i.e. this is the first measruement
+  if (!is_initialized_)
+  {
+    // Initialize the state ekf_.x_ with the first measurement.
+    // NOTE: For an unscented kalman filter, the idea is to predict the state
+    //       vector with px, py, v, yaw, yaw_rate
+    x_ = VectorXd(5);
+
+    // Lidar measurement
+    if (meas_package.sensor_type_ == MeasurementPackage::LASER)
+    {
+      // Set the state with the initial location, velocity, yaw and yaw rate
+      x_ << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1], 0, 0, 0;
+    }
+    // Radar measurement
+    else if (meas_package.sensor_type_ == MeasurementPackage::RADAR)
+    {
+      // Angular velocity
+      float rho = meas_package.raw_measurements_[0];
+      // Angle
+      float phi = meas_package.raw_measurements_[1];
+
+      // Convert from polar to cartesian coordinates and initialize state.
+      float px = rho * cos(phi);
+      float py = rho * sin(phi);
+
+      // Set the state with the initial location, velocity, yaw and yaw rate
+      x_ << px, py, 0, 0, 0;
+    }
+
+    // Capture the timestamp for the next iteration
+		previous_timestamp_ = meas_package.timestamp_;
+
+    // Done initializing, no need to predict or update
+    is_initialized_ = true;
+
+    return;
+  }
+
+  // Check whether the timestamps match, if they do then we have sensor
+  // measurements at the same time. So prediction needs to be done only
+  // once.
+  if(meas_package.timestamp_ != previous_timestamp_)
+  {
+    // Compute the time elapsed between the current and previous measurements
+    // dt - expressed in seconds
+    float dt = (meas_package.timestamp_ - previous_timestamp_) / 1000000.0;
+
+    // Capture the timestamp for the next iteration
+    previous_timestamp_ = meas_package.timestamp_;
+
+    // Prediction step
+    Prediction(dt);
+  }
+
+  // Update step
+  if (meas_package.sensor_type_ == MeasurementPackage::LASER)
+  {
+    // Lidar updates
+    UpdateLidar(meas_package);
+  }
+  else
+  {
+    // Radar updates
+    UpdateRadar(meas_package);
+  }
 }
 
 // Predicts sigma points, the state, and the state covariance matrix.
