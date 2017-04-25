@@ -14,8 +14,7 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
-// Function which checks if the user has provided
-// the correct arguments
+// Function which checks if the user has provided the correct arguments
 void check_arguments(int argc, char* argv[])
 {
   string usage_instructions = "Usage instructions: ";
