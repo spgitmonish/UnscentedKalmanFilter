@@ -13,7 +13,6 @@ public:
   } sensor_type_;
 
   Eigen::VectorXd gt_values_;
-
 };
 
 #endif /* GROUND_TRUTH_PACKAGE_H_ */

@@ -8,20 +8,18 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
-/**
- * Initializes Unscented Kalman filter
- */
+// Initializes Unscented Kalman filter
 UKF::UKF() {
-  // if this is false, laser measurements will be ignored (except during init)
+  // If this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
-  // if this is false, radar measurements will be ignored (except during init)
+  // If this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
 
-  // initial state vector
+  // Initial state vector
   x_ = VectorXd(5);
 
-  // initial covariance matrix
+  // Initial covariance matrix
   P_ = MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
@@ -56,10 +54,7 @@ UKF::UKF() {
 
 UKF::~UKF() {}
 
-/**
- * @param {MeasurementPackage} meas_package The latest measurement data of
- * either radar or laser.
- */
+// meas_package: The latest measurement data of either radar or lidar.
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   /**
   TODO:
@@ -69,11 +64,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   */
 }
 
-/**
- * Predicts sigma points, the state, and the state covariance matrix.
- * @param {double} delta_t the change in time (in seconds) between the last
- * measurement and this one.
- */
+// Predicts sigma points, the state, and the state covariance matrix.
+// delta_t: The change in time (in seconds) between
+//          the last measurement and this one.
 void UKF::Prediction(double delta_t) {
   /**
   TODO:
@@ -83,10 +76,7 @@ void UKF::Prediction(double delta_t) {
   */
 }
 
-/**
- * Updates the state and the state covariance matrix using a laser measurement.
- * @param {MeasurementPackage} meas_package
- */
+// Updates the state and the state covariance matrix using a lidar measurement.
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
   /**
   TODO:
@@ -98,10 +88,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   */
 }
 
-/**
- * Updates the state and the state covariance matrix using a radar measurement.
- * @param {MeasurementPackage} meas_package
- */
+// Updates the state and the state covariance matrix using a radar measurement.
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
   /**
   TODO:
