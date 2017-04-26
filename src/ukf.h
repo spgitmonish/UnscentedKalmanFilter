@@ -34,6 +34,15 @@ public:
   // Square root of the matrix 'P' using Cholesky decomposition
   MatrixXd A_;
 
+  // Weights of sigma points
+  VectorXd weights_;
+
+  // Augmented state vector
+  VectorXd x_aug_;
+
+  // Augmented state covariance
+  MatrixXd P_aug_;
+  
   // Augmented sigma points matrix
   MatrixXd Xsig_aug_;
 
@@ -72,9 +81,6 @@ public:
 
   // Measurement noise covariance matrix for radar
   MatrixXd R_radar_;
-
-  // Weights of sigma points
-  VectorXd weights_;
 
   // State dimension
   int n_x_;

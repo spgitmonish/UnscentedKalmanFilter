@@ -13,17 +13,23 @@ UKF::UKF() {
   // Variable to keep track of the previous timestamp
   previous_timestamp_ = 0;
 
+  // Initalized to false
+  is_initialized_ = false;
+
   // If this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
   // If this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
 
+  // Initialize state dimension(px, py, v, yaw, yaw_rate)
+  n_x_ = 5;
+
   // Initial state vector
-  x_ = VectorXd(5);
+  x_ = VectorXd(n_x_);
 
   // Initial covariance matrix
-  P_ = MatrixXd(5, 5);
+  P_ = MatrixXd(n_x_, n_x_);
   // Initialize the state covariance matrix 'P'
   // NOTE 1: These numbers are based on the square of the measurement noise SD,
   //         (Since variance is the square of SD), for px, py. The assumption
@@ -37,21 +43,6 @@ UKF::UKF() {
         0, 0, 0, 0.025, 0,
         0, 0, 0, 0, 0.025;
 
-  // Initalize the weights vector
-  weights_ = VectorXd(2 * n_aug_ + 1);
-  
-  // Initialize Augmented Sigma Point Matrix(n_aug_, 2*n_aug_ + 1 dimensions)
-  Xsig_aug_ = MatrixXd(n_aug_, 2 * n_aug_ + 1);
-
-  // Initialize Predicted Sigma Point Matrix
-  Xsig_pred_ = MatrixXd(n_aug_, 2 * n_aug_ + 1);
-
-  // Calculate square root of state covariance matrix 'P'
-  A_ = P_.llt().matrixL();
-
-  // Initialize state dimension(px, py, v, yaw, yaw_rate)
-  n_x_ = 5;
-
   // Initialize augmented state dimension(px, py, v, yaw, yaw_rate, a, yawdd)
   // NOTE: Process noise has a non-linear effect, so it is represented by
   //       sigma points as well
@@ -59,6 +50,21 @@ UKF::UKF() {
 
   // Initalize spreading parameter lamda
   lambda_ = 3 - n_aug_;
+
+  // Initalize the weights vector
+  weights_ = VectorXd(2 * n_aug_ + 1);
+
+  // Initialize augmented state(mean) vector
+  x_aug_ = VectorXd(n_aug_);
+
+  // Initialize augmented state covariance
+  P_aug_ = MatrixXd(n_aug_, n_aug_);
+
+  // Initialize Augmented Sigma Point Matrix(n_aug_, 2*n_aug_ + 1 dimensions)
+  Xsig_aug_ = MatrixXd(n_aug_, 2 * n_aug_ + 1);
+
+  // Initialize Predicted Sigma Point Matrix
+  Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   // NOTE: This caculation is made using the first 8 vx, vy measurements
@@ -158,8 +164,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     // Initialize the state ekf_.x_ with the first measurement.
     // NOTE: For an unscented kalman filter, the idea is to predict the state
     //       vector with px, py, v, yaw, yaw_rate
-    x_ = VectorXd(5);
-
     // Lidar measurement
     if (meas_package.sensor_type_ == MeasurementPackage::LASER)
     {
@@ -211,7 +215,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   }
 
   // Update step
-  if (meas_package.sensor_type_ == MeasurementPackage::LASER)
+  /*if (meas_package.sensor_type_ == MeasurementPackage::LASER)
   {
     // Lidar updates
     UpdateLidar(meas_package);
@@ -220,7 +224,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   {
     // Radar updates
     UpdateRadar(meas_package);
-  }
+  }*/
 }
 
 // Predicts sigma points, the state, and the state covariance matrix.
@@ -248,14 +252,27 @@ void UKF::Prediction(double delta_t)
 // Function to generate augmented sigma points
 void UKF::GenerateAugmentedSigmaPoints()
 {
+  // Create augmented mean state with the noise
+  // NOTE: The noise has zero mean and sigma^2 variance
+  x_aug_.head(n_x_) = x_;
+  x_aug_(5) = 0;
+  x_aug_(6) = 0;
+
+  // Create augmented covariance matrix
+  P_aug_.topLeftCorner(n_x_, n_x_) = P_;
+  P_aug_.bottomRightCorner(2, 2) = Q_;
+
+  // Calculate square root of augmented state covariance matrix 'P'
+  A_ = P_aug_.llt().matrixL();
+
   // Set first column of sigma point matrix
-  Xsig_aug_.col(0) = x_;
+  Xsig_aug_.col(0) = x_aug_;
 
   // Set remaining sigma points
-  for (int i = 0; i < n_x_; i++)
+  for (int i = 0; i < n_aug_; i++)
   {
-     Xsig_aug_.col(i + 1) = x_ + sqrt(lambda_ + n_aug_) * A_.col(i);
-     Xsig_aug_.col(i + 1 + n_aug_) = x_ - sqrt(lambda_ + n_aug_) * A_.col(i);
+     Xsig_aug_.col(i + 1) = x_aug_ + sqrt(lambda_ + n_aug_) * A_.col(i);
+     Xsig_aug_.col(i + 1 + n_aug_) = x_aug_ - sqrt(lambda_ + n_aug_) * A_.col(i);
   }
 }
 
@@ -333,8 +350,8 @@ void UKF::GenerateProcessStateAndCovariance()
     VectorXd X_min_x =  Xsig_pred_.col(i) - x_;
 
     // Angle normalization
-    while (X_min_x(3)> M_PI) X_min_x(3)-=2.*M_PI;
-    while (X_min_x(3)<-M_PI) X_min_x(3)+=2.*M_PI;
+    //while (X_min_x(3)> M_PI) X_min_x(3)-=2.*M_PI;
+    //while (X_min_x(3)<-M_PI) X_min_x(3)+=2.*M_PI;
 
     // Predict the state covariance
     P_ = P_ + weights_(i) * X_min_x * X_min_x.transpose();
