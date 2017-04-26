@@ -206,6 +206,9 @@ void UKF::Prediction(double delta_t)
 
   // Generate predicted sigma points
   GeneratePredictedSigmaPoints(delta_t);
+
+  // Generate process state and covariance matrices from predicted sigma points
+  GenerateProcessStateAndCovariance();
 }
 
 // Updates the state and the state covariance matrix using a lidar measurement.
@@ -295,12 +298,38 @@ void UKF::GeneratePredictedSigmaPoints(double delta_t)
     yawd_p = yawd_p + nu_yawdd*delta_t;
 
     // Write predicted sigma point into correct column
-    // NOTE: Make sure that the yaw is between -PI and +PI
     Xsig_pred_(0, i) = px_p;
     Xsig_pred_(1, i) = py_p;
     Xsig_pred_(2, i) = v_p;
     Xsig_pred_(3, i) = yaw_p;
     Xsig_pred_(4, i) = yawd_p;
+  }
+}
+
+// Generate the process state vector and covariance matrix
+// using the predicted sigma points
+void UKF::GenerateProcessStateAndCovariance()
+{
+  // For the state vector 'x'
+  for(int i = 0; i < 2 * n_aug_ + 1; i++)
+  {
+    // Predict state mean
+    x_ = x_ + weights_(i) * Xsig_pred_.col(i);
+  }
+
+  // For the state covariance matrix 'P'
+  for(int i = 0; i < 2 * n_aug_ + 1; i++)
+  {
+    // The difference between column 'i'(sigma point for each of the dimension)
+    // and the state vector
+    VectorXd X_min_x =  Xsig_pred_.col(i) - x_;
+
+    // Angle normalization
+    while (X_min_x(3)> M_PI) X_min_x(3)-=2.*M_PI;
+    while (X_min_x(3)<-M_PI) X_min_x(3)+=2.*M_PI;
+
+    // Predict the state covariance
+    P_ = P_ + weights_(i) * X_min_x * X_min_x.transpose();
   }
 }
 

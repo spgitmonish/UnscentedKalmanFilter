@@ -134,6 +134,9 @@ private:
   // Function to generate predicted sigma points
   void GeneratePredictedSigmaPoints(double delta_t);
 
+  // Function to generate process state and covariance
+  void GenerateProcessStateAndCovariance();
+
   // Function to calculate weights for conversion from sigma points to
   // state and covariance
   void CalculateWeights();
