@@ -68,7 +68,7 @@ public:
   MatrixXd Q_;
 
   // Measurement noise covariance matrix for laser
-  MatrixXd R_laser_;
+  MatrixXd R_lidar_;
 
   // Measurement noise covariance matrix for radar
   MatrixXd R_radar_;

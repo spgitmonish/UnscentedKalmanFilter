@@ -91,7 +91,7 @@ UKF::UKF() {
         0, std_yawdd_*std_yawdd_;
 
   // Lidar Measurement noise covariance matrix
-  R_laser_ << std_laspx_*std_laspx_, 0,
+  R_lidar_ << std_laspx_*std_laspx_, 0,
               0, std_laspy_*std_laspy_;
 
   // Radar Measurement noise covariance matrix
@@ -265,7 +265,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package)
   }
 
   // Add the measurement noise covariance matrix
-  S_pred_lidar_ = S_pred_lidar_ + R_laser_;
+  S_pred_lidar_ = S_pred_lidar_ + R_lidar_;
 
   // Create matrix for cross correlation Tc
   MatrixXd Tc = MatrixXd(n_x_, n_z_);
@@ -280,10 +280,8 @@ void UKF::UpdateLidar(MeasurementPackage meas_package)
       while(X_diff_x(3) > M_PI) X_diff_x(3) -= 2 * M_PI;
       while(X_diff_x(3) < -M_PI) X_diff_x(3) += 2 * M_PI;
 
+      // Predicted lidar measurement vector and sigma points
       VectorXd Z_diff_z = Zsig_pred_lidar_.col(i) - z_pred_lidar_;
-      // Normalize the angles
-      while(Z_diff_z(1) > M_PI) Z_diff_z(1) -= 2 * M_PI;
-      while(Z_diff_z(1) < -M_PI) Z_diff_z(1) += 2 * M_PI;
 
       Tc = Tc + weights_(i) * X_diff_x * Z_diff_z.transpose();
   }
