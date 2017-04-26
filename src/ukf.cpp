@@ -108,9 +108,17 @@ UKF::UKF() {
   // Lidar measures px, py
   n_z_lidar_ = 2;
 
+  // Predicted lidar measurement sigma points
+  Zsig_pred_lidar_ = MatrixXd(n_z_lidar_, 2 * n_aug_ + 1);
 
+  // Predicted lidar measurement vector
+  z_pred_lidar_ = VectorXd(n_z_lidar_);
 
+  // Predicted lidar measurement covariance matrix
+  S_pred_lidar_ = MatrixXd(n_z_lidar_, n_z_lidar_);
 
+  // Radar measures rho, phi, rho_dot
+  n_z_radar_ = 3;
 
   // Predicted radar measurement sigma points
   Zsig_pred_radar_ = MatrixXd(n_z_radar_, 2 * n_aug_ + 1);
