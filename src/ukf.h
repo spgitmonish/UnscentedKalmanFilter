@@ -122,6 +122,10 @@ public:
   void UpdateRadar(MeasurementPackage meas_package);
 
 private:
+  // Private function to calculate weights for conversion from sigma points to
+  // state and covariance
+  void CalculateWeights();
+
   // Private function which calculates normalized innovation squared (NIS)
   double CalculateNIS(VectorXd z, VectorXd z_pred, MatrixXd S);
 };

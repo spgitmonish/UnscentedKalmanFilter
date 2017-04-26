@@ -37,6 +37,17 @@ UKF::UKF() {
         0, 0, 0, 0.025, 0,
         0, 0, 0, 0, 0.025;
 
+  // Initialize state dimension(px, py, v, yaw, yaw_rate)
+  n_x_ = 5;
+
+  // Initialize augmented state dimension(px, py, v, yaw, yaw_rate, a, yawdd)
+  // NOTE: Process noise has a non-linear effect, so it is represented by
+  //       sigma points as well
+  n_aug_ = 7;
+
+  // Initalize spreading parameter lamda
+  lambda_ = 3 - n_aug_;
+
   // Process noise standard deviation longitudinal acceleration in m/s^2
   // NOTE: This caculation is made using the first 8 vx, vy measurements
   //       1. v1 = sqrt(vx1*vx1 + vy1*vy1)
@@ -46,7 +57,7 @@ UKF::UKF() {
   //       5. Or take the median value into consideration
   std_a_ = 2.5;
 
-  // Process noise standard deviation yaw acceleration in rad/s^2
+  // Process noise standard deviation yaw acceleration in rad/s^2(yaw double dot)
   // NOTE: This caculation is made using the first 8 yaw_rate measurements
   //      1. a = (y_r_1 - y_r_2)/1. Delta in time is one second
   //      2. Calculate 3 more times and take average
@@ -134,6 +145,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     // Capture the timestamp for the next iteration
 		previous_timestamp_ = meas_package.timestamp_;
 
+    // Perform a one time calculation of the weights
+    CalculateWeights();
+
     // Done initializing, no need to predict or update
     is_initialized_ = true;
 
@@ -206,6 +220,20 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
 
   You'll also need to calculate the radar NIS.
   */
+}
+
+// Calculate the weights which is used in determining predicted state/covariance
+// predicted measurement state/covariance using the respective sigma points
+void UKF::CalculateWeights()
+{
+  // First weight
+  weights_(0) = lambda_/(lambda_ + n_aug_);
+
+  // Remaining weights
+  for (int w = 1; w < 2*n_aug_ + 1; w++)
+  {
+    weights_(w) = 0.5/(lambda_ + n_aug_);
+  }
 }
 
 // Calculate NIS using actual measurement, estimated measurement and
