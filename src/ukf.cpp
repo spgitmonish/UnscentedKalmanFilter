@@ -269,6 +269,9 @@ void UKF::GenerateAugmentedSigmaPoints()
   // Calculate square root of augmented state covariance matrix 'P'
   A_ = P_aug_.llt().matrixL();
 
+  // Initialize the augmented sigma points matrix
+  Xsig_aug_.fill(0);
+
   // Set first column of sigma point matrix
   Xsig_aug_.col(0) = x_aug_;
 
@@ -402,7 +405,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package)
 
     // Populate each column of the matrix Z sigma
     Zsig_pred_lidar_.col(i) << px,
-                                 py;
+                               py;
   }
 
   // Calculate mean predicted measurement vector
