@@ -37,6 +37,9 @@ UKF::UKF() {
         0, 0, 0, 0.025, 0,
         0, 0, 0, 0, 0.025;
 
+  // Initalize the weights vector
+  weights_ = VectorXd(2 * n_aug_ + 1);
+  
   // Initialize Augmented Sigma Point Matrix(n_aug_, 2*n_aug_ + 1 dimensions)
   Xsig_aug_ = MatrixXd(n_aug_, 2 * n_aug_ + 1);
 
