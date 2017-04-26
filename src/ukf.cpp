@@ -24,6 +24,18 @@ UKF::UKF() {
 
   // Initial covariance matrix
   P_ = MatrixXd(5, 5);
+  // Initialize the state covariance matrix 'P'
+  // NOTE 1: These numbers are based on the square of the measurement noise SD,
+  //         (Since variance is the square of SD), for px, py. The assumption
+  //         being made here is that the process error is probably similar in
+  //         the worst case.
+  // NOTE 2: The variances of the other variables, v, yaw and yaw_rate
+  //         are also estimated based on NOTE 1
+  P_ << 0.025, 0, 0, 0, 0,
+        0, 0.025, 0, 0, 0,
+        0, 0, 0.025, 0, 0,
+        0, 0, 0, 0.025, 0,
+        0, 0, 0, 0, 0.025;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   // NOTE: This caculation is made using the first 8 vx, vy measurements
@@ -56,6 +68,19 @@ UKF::UKF() {
   // Radar measurement noise standard deviation radius change in m/s
   std_radrd_ = 0.3;
 
+  // Process noise covariance matrix
+  // Longitudnal accelaration and yaw accelaration noise variance
+  Q_ << std_a_*std_a_, 0,
+        0, std_yawdd_*std_yawdd_;
+
+  // Lidar Measurement noise covariance matrix
+  R_laser_ << std_laspx_*std_laspx_, 0,
+              0, std_laspy_*std_laspy_;
+
+  // Radar Measurement noise covariance matrix
+  R_radar_ << std_radr_, 0, 0,
+              0, std_radphi_, 0,
+              0, 0, std_radrd_;
   /**
   TODO:
 
@@ -147,7 +172,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 // Predicts sigma points, the state, and the state covariance matrix.
 // delta_t: The change in time (in seconds) between
 //          the last measurement and this one.
-void UKF::Prediction(double delta_t) {
+void UKF::Prediction(double delta_t)
+{
   /**
   TODO:
 
@@ -157,7 +183,8 @@ void UKF::Prediction(double delta_t) {
 }
 
 // Updates the state and the state covariance matrix using a lidar measurement.
-void UKF::UpdateLidar(MeasurementPackage meas_package) {
+void UKF::UpdateLidar(MeasurementPackage meas_package)
+{
   /**
   TODO:
 
@@ -169,7 +196,8 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 }
 
 // Updates the state and the state covariance matrix using a radar measurement.
-void UKF::UpdateRadar(MeasurementPackage meas_package) {
+void UKF::UpdateRadar(MeasurementPackage meas_package)
+{
   /**
   TODO:
 
@@ -178,4 +206,11 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
+}
+
+// Calculate NIS using actual measurement, estimated measurement and
+// predicted measurement covariance
+double UKF::CalculateNIS(VectorXd z, VectorXd z_pred, MatrixXd S)
+{
+  return 0.0;
 }

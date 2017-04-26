@@ -58,6 +58,15 @@ public:
   // Radar measurement noise standard deviation radius change in m/s
   double std_radrd_ ;
 
+  // Process noise covariance matrix
+  MatrixXd Q_;
+
+  // Measurement noise covariance matrix for laser
+  MatrixXd R_laser_;
+
+  // Measurement noise covariance matrix for radar
+  MatrixXd R_radar_;
+
   // Weights of sigma points
   VectorXd weights_;
 
@@ -69,6 +78,24 @@ public:
 
   // Sigma point spreading parameter
   double lambda_;
+
+  // Predicted lidar sigma points matrix
+  MatrixXd Zsig_pred_lidar_;
+
+  // Predicted radar sigma points matrix
+  MatrixXd Zsig_pred_radar_;
+
+  // Predicted lidar measurement vector
+  VectorXd z_pred_lidar_;
+
+  // Predicted radar measurement vector
+  VectorXd z_pred_radar_;
+
+  // Predicted lidar measurement covariance
+  MatrixXd S_pred_lidar_;
+
+  // Predicted radar measurement covariance
+  MatrixXd S_pred_radar_;
 
   // The current NIS for radar
   double NIS_radar_;
@@ -93,6 +120,10 @@ public:
 
   // Updates the state and the state covariance matrix using a radar measurement
   void UpdateRadar(MeasurementPackage meas_package);
+
+private:
+  // Private function which calculates normalized innovation squared (NIS)
+  double CalculateNIS(VectorXd z, VectorXd z_pred, MatrixXd S);
 };
 
 #endif /* UKF_H */
