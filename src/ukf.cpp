@@ -470,7 +470,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
   // Get the measured vector from the sensor
   VectorXd z_ = meas_package.raw_measurements_;
 
-  // Radar measures row, phi and phi_dot
+  // Radar measures row, phi and row_dot
   int n_z_ = n_z_radar_;
 
   // Transform sigma points into measurement space
@@ -485,12 +485,12 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
     double row = sqrt(px*px + py*py);
     // NOTE: Using atan2 limits the value between -PI and PI
     double phi = atan2(py, px);
-    double phi_dot = ((px*cos(yaw) + py*sin(yaw))*v)/row;
+    double row_dot = ((px*cos(yaw) + py*sin(yaw))*v)/row;
 
     // Populate each column of the matrix Z sigma
     Zsig_pred_radar_.col(i) << row,
                                phi,
-                               phi_dot;
+                               row_dot;
   }
 
   // Calculate mean predicted measurement vector
