@@ -17,7 +17,7 @@ UKF::UKF() {
   is_initialized_ = false;
 
   // If this is false, laser measurements will be ignored (except during init)
-  use_laser_ = true;
+  use_laser_ = false;
 
   // If this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
@@ -138,6 +138,10 @@ UKF::UKF() {
   // Predicted radar measurement covariance matrix
   S_pred_radar_ = MatrixXd(n_z_radar_, n_z_radar_);
 
+  // Set the NIS_laser_ and NIS_radar_ values to 0.0
+  NIS_laser_ = 0.0;
+  NIS_radar_ = 0.0;
+
   /**
   TODO:
 
@@ -215,12 +219,12 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   }
 
   // Update step
-  if (meas_package.sensor_type_ == MeasurementPackage::LASER)
+  if ((meas_package.sensor_type_ == MeasurementPackage::LASER) && use_laser_)
   {
     // Lidar updates
     UpdateLidar(meas_package);
   }
-  else
+  else if((meas_package.sensor_type_ == MeasurementPackage::RADAR) && use_laser_)
   {
     // Radar updates
     UpdateRadar(meas_package);

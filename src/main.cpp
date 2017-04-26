@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
     out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
 
     // Output lidar and radar specific data
-    if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER)
+    if ((measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) && ukf.use_laser_)
     {
       // Sensor type Lidar
       out_file_ << "lidar" << "\t";
@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
       out_file_ << measurement_pack_list[k].raw_measurements_(1) << "\t";
 
     }
-    else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR)
+    else if ((measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) && ukf.use_radar_)
     {
       // Sensor type Radar
       out_file_ << "radar" << "\t";
