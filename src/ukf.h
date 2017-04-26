@@ -85,6 +85,12 @@ public:
   // Sigma point spreading parameter
   double lambda_;
 
+  // Augmented lidar measurement state dimension
+  int n_z_lidar_;
+
+  // Augmented radar measurement state dimension
+  int n_z_radar_;
+
   // Predicted lidar sigma points matrix
   MatrixXd Zsig_pred_lidar_;
 
