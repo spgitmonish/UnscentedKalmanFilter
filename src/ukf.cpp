@@ -37,6 +37,12 @@ UKF::UKF() {
         0, 0, 0, 0.025, 0,
         0, 0, 0, 0, 0.025;
 
+  // Initialize Augmented Sigma Point Matrix(n_aug_, 2*n_aug_ + 1 dimensions)
+  Xsig_aug_ = MatrixXd(n_aug_, 2 * n_aug_ + 1);
+
+  // Calculate square root of state covariance matrix 'P'
+  A_ = P_.llt().matrixL();
+
   // Initialize state dimension(px, py, v, yaw, yaw_rate)
   n_x_ = 5;
 
@@ -194,6 +200,12 @@ void UKF::Prediction(double delta_t)
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+
+  // Generate augmented sigma points
+  GenerateAugmentedSigmaPoints();
+
+  // Generate predicted sigma points
+  GeneratePredictedSigmaPoints(delta_t);
 }
 
 // Updates the state and the state covariance matrix using a lidar measurement.
@@ -220,6 +232,76 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
 
   You'll also need to calculate the radar NIS.
   */
+}
+
+// Function to generate augmented sigma points
+void UKF::GenerateAugmentedSigmaPoints()
+{
+  // Set first column of sigma point matrix
+  Xsig_aug_.col(0) = x_;
+
+  // Set remaining sigma points
+  for (int i = 0; i < n_x_; i++)
+  {
+     Xsig_aug_.col(i + 1) = x_ + sqrt(lambda_ + n_aug_) * A_.col(i);
+     Xsig_aug_.col(i + 1 + n_aug_) = x_ - sqrt(lambda_ + n_aug_) * A_.col(i);
+  }
+}
+
+// Function to generate predicted sigma points
+void UKF::GeneratePredictedSigmaPoints(double delta_t)
+{
+  // Predict sigma points of k+1 using augmented sigma points of state at 'k'
+  // Each of the sigma points is passed through the function f(x, v)
+  // NOTE 1: There are 2*n_aug + 1 sigma points(i.e number of columns) for the 5 dimensions
+  // NOTE 2: The input is 7-D(rows) of the augmented state,
+  //         output is 5-D(rows) for the predicted state
+  for (int i = 0; i < 2 * n_aug_ + 1; i++)
+  {
+    // Extract values for better readability
+    double p_x = Xsig_aug_(0, i);
+    double p_y = Xsig_aug_(1, i);
+    double v = Xsig_aug_(2, i);
+    double yaw = Xsig_aug_(3, i);
+    double yawd = Xsig_aug_(4, i);
+    double nu_a = Xsig_aug_(5, i);
+    double nu_yawdd = Xsig_aug_(6, i);
+
+    // Predicted state position values
+    double px_p, py_p;
+
+    // Avoid division by zero
+    if (fabs(yawd) > 0.001)
+    {
+        px_p = p_x + v/yawd * ( sin(yaw + yawd*delta_t) - sin(yaw) );
+        py_p = p_y + v/yawd * ( cos(yaw) - cos(yaw+yawd*delta_t) );
+    }
+    else
+    {
+        px_p = p_x + v*delta_t*cos(yaw);
+        py_p = p_y + v*delta_t*sin(yaw);
+    }
+
+    // Predicted state velocity, yaw and yaw rate values
+    double v_p = v;
+    double yaw_p = yaw + yawd*delta_t;
+    double yawd_p = yawd;
+
+    // Add noise for all the components of the state
+    px_p = px_p + 0.5*nu_a*delta_t*delta_t * cos(yaw);
+    py_p = py_p + 0.5*nu_a*delta_t*delta_t * sin(yaw);
+    v_p = v_p + nu_a*delta_t;
+    yaw_p = yaw_p + 0.5*nu_yawdd*delta_t*delta_t;
+    yawd_p = yawd_p + nu_yawdd*delta_t;
+
+    // Write predicted sigma point into correct column
+    // NOTE: Make sure that the yaw is between -PI and +PI
+    Xsig_pred_(0, i) = px_p;
+    Xsig_pred_(1, i) = py_p;
+    Xsig_pred_(2, i) = v_p;
+    Xsig_pred_(3, i) = yaw_p;
+    Xsig_pred_(4, i) = yawd_p;
+  }
 }
 
 // Calculate the weights which is used in determining predicted state/covariance

@@ -31,6 +31,12 @@ public:
   // State covariance matrix
   MatrixXd P_;
 
+  // Square root of the matrix 'P' using Cholesky decomposition
+  MatrixXd A_;
+
+  // Augmented sigma points matrix
+  MatrixXd Xsig_aug_;
+
   // Predicted sigma points matrix
   MatrixXd Xsig_pred_;
 
@@ -122,11 +128,17 @@ public:
   void UpdateRadar(MeasurementPackage meas_package);
 
 private:
-  // Private function to calculate weights for conversion from sigma points to
+  // Function to generate augmented sigma points
+  void GenerateAugmentedSigmaPoints();
+
+  // Function to generate predicted sigma points
+  void GeneratePredictedSigmaPoints(double delta_t);
+
+  // Function to calculate weights for conversion from sigma points to
   // state and covariance
   void CalculateWeights();
 
-  // Private function which calculates normalized innovation squared (NIS)
+  // Function which calculates normalized innovation squared (NIS)
   double CalculateNIS(VectorXd z, VectorXd z_pred, MatrixXd S);
 };
 
