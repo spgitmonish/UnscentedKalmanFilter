@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <math.h>
 #include "tools.h"
 
 using Eigen::MatrixXd;
@@ -42,7 +43,7 @@ public:
 
   // Augmented state covariance
   MatrixXd P_aug_;
-  
+
   // Augmented sigma points matrix
   MatrixXd Xsig_aug_;
 

@@ -37,11 +37,11 @@ UKF::UKF() {
   //         the worst case.
   // NOTE 2: The variances of the other variables, v, yaw and yaw_rate
   //         are also estimated based on NOTE 1
-  P_ << 0.025, 0, 0, 0, 0,
-        0, 0.025, 0, 0, 0,
-        0, 0, 0.025, 0, 0,
-        0, 0, 0, 0.025, 0,
-        0, 0, 0, 0, 0.025;
+  P_ << 1, 0, 0, 0, 0,
+        0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 0, 1;
 
   // Initialize augmented state dimension(px, py, v, yaw, yaw_rate, a, yawdd)
   // NOTE: Process noise has a non-linear effect, so it is represented by
@@ -80,7 +80,7 @@ UKF::UKF() {
   //      1. a = (y_r_1 - y_r_2)/1. Delta in time is one second
   //      2. Calculate 3 more times and take average
   //      3. Or take the median value into consideration
-  std_yawdd_ = 3.15;
+  std_yawdd_ = 0.25;
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -305,6 +305,16 @@ void UKF::GeneratePredictedSigmaPoints(double delta_t)
     // Predicted state position values
     double px_p, py_p;
 
+    // Make sure the yaw is between -PI and PI
+    if(yaw > M_PI)
+    {
+      yaw = fmod((yaw - M_PI), (2*M_PI)) - M_PI;
+    }
+    else if(yaw < -M_PI)
+    {
+      yaw = fmod((yaw + M_PI), (2*M_PI)) + M_PI;
+    }
+
     // Avoid division by zero
     if (fabs(yawd) > 0.001)
     {
@@ -343,12 +353,14 @@ void UKF::GeneratePredictedSigmaPoints(double delta_t)
 void UKF::GenerateProcessStateAndCovariance()
 {
   // For the state vector 'x'
+  x_.fill(0);
   for(int i = 0; i < 2 * n_aug_ + 1; i++)
   {
     // Predict state mean
     x_ = x_ + weights_(i) * Xsig_pred_.col(i);
   }
 
+  P_.fill(0);
   // For the state covariance matrix 'P'
   for(int i = 0; i < 2 * n_aug_ + 1; i++)
   {
@@ -357,8 +369,14 @@ void UKF::GenerateProcessStateAndCovariance()
     VectorXd X_min_x =  Xsig_pred_.col(i) - x_;
 
     // Angle normalization
-    //while (X_min_x(3)> M_PI) X_min_x(3)-=2.*M_PI;
-    //while (X_min_x(3)<-M_PI) X_min_x(3)+=2.*M_PI;
+    if(X_min_x(3) > M_PI)
+    {
+      X_min_x(3) = fmod((X_min_x(3) - M_PI), (2*M_PI)) - M_PI;
+    }
+    else if(X_min_x(3) < -M_PI)
+    {
+      X_min_x(3) = fmod((X_min_x(3) + M_PI), (2*M_PI)) + M_PI;
+    }
 
     // Predict the state covariance
     P_ = P_ + weights_(i) * X_min_x * X_min_x.transpose();
@@ -485,6 +503,16 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
     double v = Xsig_pred_(2, i);
     double yaw = Xsig_pred_(3, i);
 
+    // Make sure the yaw is between -PI and PI
+    if(yaw > M_PI)
+    {
+      yaw = fmod((yaw - M_PI), (2*M_PI)) - M_PI;
+    }
+    else if(X_min_x(3) < -M_PI)
+    {
+      yaw = fmod((yaw + M_PI), (2*M_PI)) + M_PI;
+    }
+
     double row = sqrt(px*px + py*py);
     // NOTE: Using atan2 limits the value between -PI and PI
     double phi = atan2(py, px);
@@ -529,13 +557,25 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
     // for both the prediction and the predicted measurements
     VectorXd X_diff_x = Xsig_pred_.col(i) - x_;
     // Normalize the angles
-    //while(X_diff_x(3) > M_PI) X_diff_x(3) -= 2 * M_PI;
-    //while(X_diff_x(3) < -M_PI) X_diff_x(3) += 2 * M_PI;
+    if(X_diff_x(3) > M_PI)
+    {
+      X_diff_x(3) = fmod((X_diff_x(3) - M_PI), (2*M_PI)) - M_PI;
+    }
+    else if(X_min_x(3) < -M_PI)
+    {
+      X_diff_x(3) = fmod((X_diff_x(3) + M_PI), (2*M_PI)) + M_PI;
+    }
 
     VectorXd Z_diff_z = Zsig_pred_radar_.col(i) - z_pred_radar_;
     // Normalize the angles
-    //while(Z_diff_z(1) > M_PI) Z_diff_z(1) -= 2 * M_PI;
-    //while(Z_diff_z(1) < -M_PI) Z_diff_z(1) += 2 * M_PI;
+    if(Z_diff_z(1) > M_PI)
+    {
+      Z_diff_z(1) = fmod((Z_diff_z(1) - M_PI), (2*M_PI)) - M_PI;
+    }
+    else if(Z_diff_z(1) < -M_PI)
+    {
+      Z_diff_z(1) = fmod((Z_diff_z(1) + M_PI), (2*M_PI)) + M_PI;
+    }
 
     Tc = Tc + weights_(i) * X_diff_x * Z_diff_z.transpose();
   }

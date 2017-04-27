@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
 
   // Call the UKF-based fusion for each measurement
   //for (size_t k = 0; k < number_of_measurements; ++k)
-  for (size_t k = 0; k < 10; ++k)
+  for (size_t k = 0; k < 5; ++k)
   {
     ukf.ProcessMeasurement(measurement_pack_list[k]);
 
