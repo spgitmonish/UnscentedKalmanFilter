@@ -258,19 +258,21 @@ void UKF::GenerateAugmentedSigmaPoints()
 {
   // Create augmented mean state with the noise
   // NOTE: The noise has zero mean and sigma^2 variance
+  x_aug_.fill(0.0);
   x_aug_.head(n_x_) = x_;
   x_aug_(5) = 0;
   x_aug_(6) = 0;
 
   // Create augmented covariance matrix
+  P_aug_.fill(0.0);
   P_aug_.topLeftCorner(n_x_, n_x_) = P_;
   P_aug_.bottomRightCorner(2, 2) = Q_;
 
   // Calculate square root of augmented state covariance matrix 'P'
   A_ = P_aug_.llt().matrixL();
 
-  // Initialize the augmented sigma points matrix
-  Xsig_aug_.fill(0);
+  // Initialize with 0s
+  Xsig_aug_.fill(0.0);
 
   // Set first column of sigma point matrix
   Xsig_aug_.col(0) = x_aug_;
@@ -289,8 +291,9 @@ void UKF::GeneratePredictedSigmaPoints(double delta_t)
   // Predict sigma points of k+1 using augmented sigma points of state at 'k'
   // Each of the sigma points is passed through the function f(x, v)
   // NOTE 1: There are 2*n_aug + 1 sigma points(i.e number of columns) for the 5 dimensions
-  // NOTE 2: The input is 7-D(rows) of the augmented state,
-  //         output is 5-D(rows) for the predicted state
+  // NOTE 2: The input is 7-D(rhos) of the augmented state,
+  //         output is 5-D(rhos) for the predicted state
+  Xsig_pred_.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++)
   {
     // Extract values for better readability
@@ -304,16 +307,6 @@ void UKF::GeneratePredictedSigmaPoints(double delta_t)
 
     // Predicted state position values
     double px_p, py_p;
-
-    // Make sure the yaw is between -PI and PI
-    if(yaw > M_PI)
-    {
-      yaw = fmod((yaw - M_PI), (2*M_PI)) - M_PI;
-    }
-    else if(yaw < -M_PI)
-    {
-      yaw = fmod((yaw + M_PI), (2*M_PI)) + M_PI;
-    }
 
     // Avoid division by zero
     if (fabs(yawd) > 0.001)
@@ -353,14 +346,14 @@ void UKF::GeneratePredictedSigmaPoints(double delta_t)
 void UKF::GenerateProcessStateAndCovariance()
 {
   // For the state vector 'x'
-  x_.fill(0);
+  x_.fill(0.0);
   for(int i = 0; i < 2 * n_aug_ + 1; i++)
   {
     // Predict state mean
     x_ = x_ + weights_(i) * Xsig_pred_.col(i);
   }
 
-  P_.fill(0);
+  P_.fill(0.0);
   // For the state covariance matrix 'P'
   for(int i = 0; i < 2 * n_aug_ + 1; i++)
   {
@@ -388,12 +381,14 @@ void UKF::GenerateProcessStateAndCovariance()
 void UKF::CalculateWeights()
 {
   // First weight
-  weights_(0) = lambda_/(lambda_ + n_aug_);
+  double weight_0 = lambda_/(lambda_ + n_aug_);
+  weights_(0) = weight_0;
 
   // Remaining weights
   for (int w = 1; w < 2*n_aug_ + 1; w++)
   {
-    weights_(w) = 0.5/(lambda_ + n_aug_);
+    double weight = 0.5/(lambda_ + n_aug_);
+    weights_(w) = weight;
   }
 }
 
@@ -427,14 +422,14 @@ void UKF::UpdateLidar(MeasurementPackage meas_package)
   }
 
   // Calculate mean predicted measurement vector
-  z_pred_lidar_.fill(0);
+  z_pred_lidar_.fill(0.0);
   for(int i = 0; i < 2*n_aug_ + 1; i++)
   {
     z_pred_lidar_ = z_pred_lidar_ + Zsig_pred_lidar_.col(i) * weights_(i);
   }
 
   // Calculate measurement covariance matrix S
-  S_pred_lidar_.fill(0);
+  S_pred_lidar_.fill(0.0);
   for(int i = 0; i < 2*n_aug_ + 1; i++)
   {
     // Difference between Z(measured sigma points) and
@@ -497,7 +492,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
   // Get the measured vector from the sensor
   VectorXd z_ = meas_package.raw_measurements_;
 
-  // Radar measures row, phi and row_dot
+  // Radar measures rho, phi and rho_dot
   int n_z_ = n_z_radar_;
 
   // Transform sigma points into measurement space
@@ -509,42 +504,49 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
     double v = Xsig_pred_(2, i);
     double yaw = Xsig_pred_(3, i);
 
-    // Make sure the yaw is between -PI and PI
-    if(yaw > M_PI)
+    double px2_py2 = sqrt(px*px + py*py);
+
+    if(px2_py2 < 0.0001)
     {
-      yaw = fmod((yaw - M_PI), (2*M_PI)) - M_PI;
-    }
-    else if(yaw < -M_PI)
-    {
-      yaw = fmod((yaw + M_PI), (2*M_PI)) + M_PI;
+      px2_py2 = 0.0001;
     }
 
-    double row = sqrt(px*px + py*py);
+    double rho = px2_py2;
     // NOTE: Using atan2 limits the value between -PI and PI
     double phi = atan2(py, px);
-    double row_dot = ((px*cos(yaw) + py*sin(yaw))*v)/row;
+    double rho_dot = ((px*cos(yaw) + py*sin(yaw))*v)/px2_py2;
 
     // Populate each column of the matrix Z sigma
-    Zsig_pred_radar_.col(i) << row,
+    Zsig_pred_radar_.col(i) << rho,
                                phi,
-                               row_dot;
+                               rho_dot;
   }
 
   // Calculate mean predicted measurement vector
-  z_pred_radar_.fill(0);
+  z_pred_radar_.fill(0.0);
   for(int i = 0; i < 2*n_aug_ + 1; i++)
   {
     z_pred_radar_ = z_pred_radar_ + Zsig_pred_radar_.col(i) * weights_(i);
   }
 
   // Calculate measurement covariance matrix S
-  S_pred_radar_.fill(0);
+  S_pred_radar_.fill(0.0);
   for(int i = 0; i < 2*n_aug_ + 1; i++)
   {
     // Difference between Z(measured sigma points) and
     // 'z'(measured mean vector)
     VectorXd Z_diff_z = VectorXd(n_z_);
     Z_diff_z = Zsig_pred_radar_.col(i) - z_pred_radar_;
+
+    // Normalize the angles
+    if(Z_diff_z(1) > M_PI)
+    {
+      Z_diff_z(1) = fmod((Z_diff_z(1) - M_PI), (2*M_PI)) - M_PI;
+    }
+    else if(Z_diff_z(1) < -M_PI)
+    {
+      Z_diff_z(1) = fmod((Z_diff_z(1) + M_PI), (2*M_PI)) + M_PI;
+    }
 
     // Calculate the measurement covariance matrix
     S_pred_radar_ = S_pred_radar_ + Z_diff_z * Z_diff_z.transpose() * weights_(i);
@@ -556,6 +558,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
   // Create matrix for cross correlation Tc
   MatrixXd Tc = MatrixXd(n_x_, n_z_);
 
+  Tc.fill(0.0);
   // Calculate cross correlation matrix
   for(int i = 0; i < 2*n_aug_ + 1; i++)
   {
