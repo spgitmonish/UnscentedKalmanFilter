@@ -459,8 +459,14 @@ void UKF::UpdateLidar(MeasurementPackage meas_package)
     // for both the prediction and the predicted measurements
     VectorXd X_diff_x = Xsig_pred_.col(i) - x_;
     // Normalize the angles
-    //while(X_diff_x(3) > M_PI) X_diff_x(3) -= 2 * M_PI;
-    //while(X_diff_x(3) < -M_PI) X_diff_x(3) += 2 * M_PI;
+    if(X_diff_x(3) > M_PI)
+    {
+      X_diff_x(3) = fmod((X_diff_x(3) - M_PI), (2*M_PI)) - M_PI;
+    }
+    else if(Z_diff_z(1) < -M_PI)
+    {
+      X_diff_x(3) = fmod((X_diff_x(3) + M_PI), (2*M_PI)) + M_PI;
+    }
 
     // Predicted lidar measurement vector and sigma points
     VectorXd Z_diff_z = Zsig_pred_lidar_.col(i) - z_pred_lidar_;
