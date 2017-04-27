@@ -463,7 +463,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package)
     {
       X_diff_x(3) = fmod((X_diff_x(3) - M_PI), (2*M_PI)) - M_PI;
     }
-    else if(Z_diff_z(1) < -M_PI)
+    else if(X_diff_x(3) < -M_PI)
     {
       X_diff_x(3) = fmod((X_diff_x(3) + M_PI), (2*M_PI)) + M_PI;
     }
@@ -514,7 +514,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
     {
       yaw = fmod((yaw - M_PI), (2*M_PI)) - M_PI;
     }
-    else if(X_min_x(3) < -M_PI)
+    else if(yaw < -M_PI)
     {
       yaw = fmod((yaw + M_PI), (2*M_PI)) + M_PI;
     }
@@ -567,7 +567,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
     {
       X_diff_x(3) = fmod((X_diff_x(3) - M_PI), (2*M_PI)) - M_PI;
     }
-    else if(X_min_x(3) < -M_PI)
+    else if(X_diff_x(3) < -M_PI)
     {
       X_diff_x(3) = fmod((X_diff_x(3) + M_PI), (2*M_PI)) + M_PI;
     }
