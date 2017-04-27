@@ -179,8 +179,7 @@ int main(int argc, char* argv[])
   out_file_ << "vy_ground_truth" << "\n";
 
   // Call the UKF-based fusion for each measurement
-  //for (size_t k = 0; k < number_of_measurements; ++k)
-  for (size_t k = 0; k < 5; ++k)
+  for (size_t k = 0; k < number_of_measurements; ++k)
   {
     ukf.ProcessMeasurement(measurement_pack_list[k]);
 
