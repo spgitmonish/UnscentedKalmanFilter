@@ -92,26 +92,17 @@ public:
   // Sigma point spreading parameter
   double lambda_;
 
-  // Augmented lidar measurement state dimension
-  int n_z_lidar_;
-
   // Augmented radar measurement state dimension
   int n_z_radar_;
 
-  // Predicted lidar sigma points matrix
-  MatrixXd Zsig_pred_lidar_;
+  // Measurement function for Lidar, since measurement is linear
+  MatrixXd H_lidar_;
 
   // Predicted radar sigma points matrix
   MatrixXd Zsig_pred_radar_;
 
-  // Predicted lidar measurement vector
-  VectorXd z_pred_lidar_;
-
   // Predicted radar measurement vector
   VectorXd z_pred_radar_;
-
-  // Predicted lidar measurement covariance
-  MatrixXd S_pred_lidar_;
 
   // Predicted radar measurement covariance
   MatrixXd S_pred_radar_;
@@ -120,7 +111,7 @@ public:
   double NIS_radar_;
 
   // The current NIS for laser
-  double NIS_laser_;
+  double NIS_lidar_;
 
   // Constructor
   UKF();
