@@ -67,19 +67,9 @@ UKF::UKF() {
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  // NOTE: This caculation is made using the first 8 vx, vy measurements
-  //       1. v1 = sqrt(vx1*vx1 + vy1*vy1)
-  //       2. v2 = sqrt(vx2*vx2 + vy2*vy2)
-  //       3. a = (v1-v2)/1. Delta in time is one second
-  //       4. Calculate 3 more times and take average
-  //       5. Or take the median value into consideration
-  std_a_ = 2.5;
+  std_a_ = 0.5;
 
   // Process noise standard deviation yaw acceleration in rad/s^2(yaw double dot)
-  // NOTE: This caculation is made using the first 8 yaw_rate measurements
-  //      1. a = (y_r_1 - y_r_2)/1. Delta in time is one second
-  //      2. Calculate 3 more times and take average
-  //      3. Or take the median value into consideration
   std_yawdd_ = 0.25;
 
   // Laser measurement noise standard deviation position1 in m
