@@ -37,7 +37,7 @@ public:
   MatrixXd P_;
 
   // Square root of the matrix 'P' using Cholesky decomposition
-  MatrixXd A_;
+  MatrixXd L_;
 
   // Weights of sigma points
   VectorXd weights_;
@@ -136,6 +136,10 @@ public:
   void UpdateRadar(MeasurementPackage meas_package);
 
 private:
+  // Function to calculate weights for conversion from sigma points to
+  // state and covariance
+  void CalculateWeights();
+
   // Function to generate augmented sigma points
   void GenerateAugmentedSigmaPoints();
 
@@ -145,9 +149,8 @@ private:
   // Function to generate process state and covariance
   void GenerateProcessStateAndCovariance();
 
-  // Function to calculate weights for conversion from sigma points to
-  // state and covariance
-  void CalculateWeights();
+  // Function to normalize angles
+  void NormalizeAngles(double &angle_to_normalize);
 
   // Function which calculates normalized innovation squared (NIS)
   double CalculateNIS(VectorXd z, VectorXd z_pred, MatrixXd S);
