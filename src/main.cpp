@@ -14,6 +14,10 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
+// NOTE : Flip this to 1 to use it with the simulator.
+//        The simulator needs to be of size 1600x900 with Simple mode
+#define DEBUG_SIMULATOR_OUTPUT 0
+
 // Function which checks if the user has provided the correct arguments
 void check_arguments(int argc, char* argv[])
 {
@@ -152,7 +156,7 @@ int main(int argc, char* argv[])
       gt_pack_list.push_back(gt_package);
   }
 
-#if DO_LONG_A_YAWDD_BIN_SEARCH
+#if DO_A_YAWDD_SD_BIN_SEARCH
   // String for file name modification(empty to start with)
   string new_out_file_name = "";
 
@@ -312,7 +316,11 @@ int main(int argc, char* argv[])
   out_file_ << "px_ground_truth" << "\t";
   out_file_ << "py_ground_truth" << "\t";
   out_file_ << "vx_ground_truth" << "\t";
-  out_file_ << "vy_ground_truth" << "\n";
+  out_file_ << "vy_ground_truth" << "\t";
+  out_file_ << "px_estimate" << "\t";
+  out_file_ << "py_estimate" << "\t";
+  out_file_ << "vx_estimate" << "\t";
+  out_file_ << "vy_estimate" << "\n";
 
   // Call the UKF-based fusion for each measurement
   for (size_t k = 0; k < number_of_measurements; ++k)
@@ -362,7 +370,7 @@ int main(int argc, char* argv[])
     out_file_ << gt_pack_list[k].gt_values_(0) << "\t";
     out_file_ << gt_pack_list[k].gt_values_(1) << "\t";
     out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
-    out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
+    out_file_ << gt_pack_list[k].gt_values_(3) << "\t";
 
     // Convert ukf x vector to cartesian to compare to ground truth
     VectorXd ukf_x_cartesian_ = VectorXd(4);
@@ -372,15 +380,32 @@ int main(int argc, char* argv[])
     float vx_estimate_ = ukf.x_(2) * cos(ukf.x_(3));
     float vy_estimate_ = ukf.x_(2) * sin(ukf.x_(3));
 
+    // Output the estimations
+    out_file_ << x_estimate_ << "\t";
+    out_file_ << y_estimate_ << "\t";
+    out_file_ << vx_estimate_ << "\t";
+    out_file_ << vy_estimate_ << "\n";
+
     ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_;
 
+    // Store the values in the respective object vectors
     estimations.push_back(ukf_x_cartesian_);
     ground_truth.push_back(gt_pack_list[k].gt_values_);
   }
 
   // Compute the accuracy (RMSE)
   Tools tools;
-  cout << "RMSE" << endl << tools.CalculateRMSE(estimations, ground_truth) << endl;
+  VectorXd rmse_output = tools.CalculateRMSE(estimations, ground_truth);
+
+#if DEBUG_SIMULATOR_OUTPUT
+  cout << "RMSE" << endl;
+  for(size_t rmse_index = 0; rmse_index < rmse_output.size(); rmse_index++)
+  {
+    cout << rmse_output(rmse_index) << endl;
+  }
+#else
+  cout << "Accuracy - RMSE:" << endl << rmse_output << endl;
+#endif
 
   // Close files
   if (out_file_.is_open()) {

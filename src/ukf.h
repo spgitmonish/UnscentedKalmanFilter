@@ -14,7 +14,7 @@ using Eigen::VectorXd;
 
 // Flag which controls the initialization of longitudinal and yaw
 // acceleration fields of UKF class during a binary search
-#define DO_LONG_A_YAWDD_BIN_SEARCH 1
+#define DO_A_YAWDD_SD_BIN_SEARCH 0
 
 class UKF {
 public:

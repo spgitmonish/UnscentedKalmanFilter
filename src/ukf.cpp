@@ -20,7 +20,7 @@ UKF::UKF() {
   use_laser_ = true;
 
   // If this is false, radar measurements will be ignored (except during init)
-  use_radar_ = true;
+  use_radar_ = false;
 
   // Initialize state dimension(px, py, v, yaw, yaw_rate)
   n_x_ = 5;
@@ -31,12 +31,6 @@ UKF::UKF() {
   // Initial covariance matrix
   P_ = MatrixXd(n_x_, n_x_);
   // Initialize the state covariance matrix 'P'
-  // NOTE 1: These numbers are based on the square of the measurement noise SD,
-  //         (Since variance is the square of SD), for px, py. The assumption
-  //         being made here is that the process error is probably similar in
-  //         the worst case.
-  // NOTE 2: The variances of the other variables, v, yaw and yaw_rate
-  //         are also estimated based on NOTE 1
   P_ << 1, 0, 0, 0, 0,
         0, 1, 0, 0, 0,
         0, 0, 1, 0, 0,
@@ -66,12 +60,14 @@ UKF::UKF() {
   // Initialize Predicted Sigma Point Matrix
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
-#if !DO_LONG_A_YAWDD_BIN_SEARCH
+#if !DO_A_YAWDD_SD_BIN_SEARCH
+  // NOTE: These values were set after doing a binary search and looking at the
+  //       RMSE variations for different combinations
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 0.40;
 
   // Process noise standard deviation yaw acceleration in rad/s^2(yaw double dot)
-  std_yawdd_ = 1.00;
+  std_yawdd_ = 1.20;
 #endif
 
   // Laser measurement noise standard deviation position1 in m
