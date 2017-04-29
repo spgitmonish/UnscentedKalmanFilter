@@ -66,11 +66,13 @@ UKF::UKF() {
   // Initialize Predicted Sigma Point Matrix
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
+#if !DO_LONG_A_YAWDD_BIN_SEARCH
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 0.5;
+  std_a_ = 0.40;
 
   // Process noise standard deviation yaw acceleration in rad/s^2(yaw double dot)
-  std_yawdd_ = 0.25;
+  std_yawdd_ = 1.00;
+#endif
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;

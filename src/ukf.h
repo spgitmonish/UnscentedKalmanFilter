@@ -12,6 +12,10 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+// Flag which controls the initialization of longitudinal and yaw
+// acceleration fields of UKF class during a binary search
+#define DO_LONG_A_YAWDD_BIN_SEARCH 1
+
 class UKF {
 public:
   // Variable to keep track of the previous timestamp
