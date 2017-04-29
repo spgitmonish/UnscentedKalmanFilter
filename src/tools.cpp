@@ -13,8 +13,8 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth)
 {
   // Vector storing the results of the calculation for each pass
-  VectorXd rmse(4);
-  rmse << 0,0,0,0;
+  VectorXd rmse(6);
+  rmse << 0, 0, 0, 0, 0, 0;
 
   // Check the validity of the following inputs:
   //  * The estimation vector size should not be zero

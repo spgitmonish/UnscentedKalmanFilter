@@ -147,15 +147,23 @@ int main(int argc, char* argv[])
       float y_gt;
       float vx_gt;
       float vy_gt;
+      float yaw_gt;
+      float yawrate_gt;
+
       iss >> x_gt;
       iss >> y_gt;
       iss >> vx_gt;
       iss >> vy_gt;
-      gt_package.gt_values_ = VectorXd(4);
-      gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
+      iss >> yaw_gt;
+      iss >> yawrate_gt;
+
+      gt_package.gt_values_ = VectorXd(6);
+      gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt, yaw_gt, yawrate_gt;
       gt_pack_list.push_back(gt_package);
   }
 
+// Do a binary search against different values of longitudinal and yaw acceleration
+// noise standard deviation
 #if DO_A_YAWDD_SD_BIN_SEARCH
   // String for file name modification(empty to start with)
   string new_out_file_name = "";
@@ -190,8 +198,8 @@ int main(int argc, char* argv[])
       ukf.std_yawdd_ = std_yawdd_test;
 
       // Used to compute the RMSE later
-      vector<VectorXd> estimations = {};
-      vector<VectorXd> ground_truth = {};
+      vector<VectorXd> estimations;
+      vector<VectorXd> ground_truth;
 
       // Start filtering from the 2nd frame(the speed is unknown in the first frame)
       size_t number_of_measurements = measurement_pack_list.size();
@@ -203,14 +211,26 @@ int main(int argc, char* argv[])
       out_file_ << "v_state" << "\t";
       out_file_ << "yaw_angle_state" << "\t";
       out_file_ << "yaw_rate_state" << "\t";
+
       out_file_ << "sensor_type" << "\t";
       out_file_ << "NIS" << "\t";
+
       out_file_ << "px_measured" << "\t";
       out_file_ << "py_measured" << "\t";
+
       out_file_ << "px_ground_truth" << "\t";
       out_file_ << "py_ground_truth" << "\t";
       out_file_ << "vx_ground_truth" << "\t";
-      out_file_ << "vy_ground_truth" << "\n";
+      out_file_ << "vy_ground_truth" << "\t";
+      out_file_ << "yaw_ground_truth" << "\t";
+      out_file_ << "yawrate_ground_truth" << "\t";
+
+      out_file_ << "px_estimate" << "\t";
+      out_file_ << "py_estimate" << "\t";
+      out_file_ << "vx_estimate" << "\t";
+      out_file_ << "vy_estimate" << "\t";
+      out_file_ << "yaw_estimate" << "\t";
+      out_file_ << "yawrate_estimate" << "\n";
 
       // Call the UKF-based fusion for each measurement
       for (size_t k = 0; k < number_of_measurements; ++k)
@@ -260,18 +280,31 @@ int main(int argc, char* argv[])
         out_file_ << gt_pack_list[k].gt_values_(0) << "\t";
         out_file_ << gt_pack_list[k].gt_values_(1) << "\t";
         out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
-        out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
+        out_file_ << gt_pack_list[k].gt_values_(3) << "\t";
+        out_file_ << gt_pack_list[k].gt_values_(4) << "\t";
+        out_file_ << gt_pack_list[k].gt_values_(5) << "\t";
 
         // Convert ukf x vector to cartesian to compare to ground truth
-        VectorXd ukf_x_cartesian_ = VectorXd(4);
+        VectorXd ukf_x_cartesian_ = VectorXd(6);
 
         float x_estimate_ = ukf.x_(0);
         float y_estimate_ = ukf.x_(1);
         float vx_estimate_ = ukf.x_(2) * cos(ukf.x_(3));
         float vy_estimate_ = ukf.x_(2) * sin(ukf.x_(3));
+        float yaw_estimate_ = ukf.x_(3);
+        float yawrate_estimate_ = ukf.x_(4);
 
-        ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_;
+        // Output the estimations
+        out_file_ << x_estimate_ << "\t";
+        out_file_ << y_estimate_ << "\t";
+        out_file_ << vx_estimate_ << "\t";
+        out_file_ << vy_estimate_ << "\t";
+        out_file_ << yaw_estimate_ << "\t";
+        out_file_ << yawrate_estimate_ << "\n";
 
+        ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_, yaw_estimate_, yawrate_estimate_;
+
+        // Store the values in the respective object vectors
         estimations.push_back(ukf_x_cartesian_);
         ground_truth.push_back(gt_pack_list[k].gt_values_);
       }
@@ -296,8 +329,8 @@ int main(int argc, char* argv[])
   UKF ukf;
 
   // Used to compute the RMSE later
-  vector<VectorXd> estimations = {};
-  vector<VectorXd> ground_truth = {};
+  vector<VectorXd> estimations;
+  vector<VectorXd> ground_truth;
 
   // Start filtering from the 2nd frame(the speed is unknown in the first frame)
   size_t number_of_measurements = measurement_pack_list.size();
@@ -309,18 +342,26 @@ int main(int argc, char* argv[])
   out_file_ << "v_state" << "\t";
   out_file_ << "yaw_angle_state" << "\t";
   out_file_ << "yaw_rate_state" << "\t";
+
   out_file_ << "sensor_type" << "\t";
   out_file_ << "NIS" << "\t";
+
   out_file_ << "px_measured" << "\t";
   out_file_ << "py_measured" << "\t";
+
   out_file_ << "px_ground_truth" << "\t";
   out_file_ << "py_ground_truth" << "\t";
   out_file_ << "vx_ground_truth" << "\t";
   out_file_ << "vy_ground_truth" << "\t";
+  out_file_ << "yaw_ground_truth" << "\t";
+  out_file_ << "yawrate_ground_truth" << "\t";
+
   out_file_ << "px_estimate" << "\t";
   out_file_ << "py_estimate" << "\t";
   out_file_ << "vx_estimate" << "\t";
-  out_file_ << "vy_estimate" << "\n";
+  out_file_ << "vy_estimate" << "\t";
+  out_file_ << "yaw_estimate" << "\t";
+  out_file_ << "yawrate_estimate" << "\n";
 
   // Call the UKF-based fusion for each measurement
   for (size_t k = 0; k < number_of_measurements; ++k)
@@ -371,22 +412,28 @@ int main(int argc, char* argv[])
     out_file_ << gt_pack_list[k].gt_values_(1) << "\t";
     out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
     out_file_ << gt_pack_list[k].gt_values_(3) << "\t";
+    out_file_ << gt_pack_list[k].gt_values_(4) << "\t";
+    out_file_ << gt_pack_list[k].gt_values_(5) << "\t";
 
     // Convert ukf x vector to cartesian to compare to ground truth
-    VectorXd ukf_x_cartesian_ = VectorXd(4);
+    VectorXd ukf_x_cartesian_ = VectorXd(6);
 
     float x_estimate_ = ukf.x_(0);
     float y_estimate_ = ukf.x_(1);
     float vx_estimate_ = ukf.x_(2) * cos(ukf.x_(3));
     float vy_estimate_ = ukf.x_(2) * sin(ukf.x_(3));
+    float yaw_estimate_ = ukf.x_(3);
+    float yawrate_estimate_ = ukf.x_(4);
 
     // Output the estimations
     out_file_ << x_estimate_ << "\t";
     out_file_ << y_estimate_ << "\t";
     out_file_ << vx_estimate_ << "\t";
-    out_file_ << vy_estimate_ << "\n";
+    out_file_ << vy_estimate_ << "\t";
+    out_file_ << yaw_estimate_ << "\t";
+    out_file_ << yawrate_estimate_ << "\n";
 
-    ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_;
+    ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_, yaw_estimate_, yawrate_estimate_;
 
     // Store the values in the respective object vectors
     estimations.push_back(ukf_x_cartesian_);
