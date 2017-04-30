@@ -114,7 +114,7 @@ In fact, just using the individual sensors, UKF accuracy is better than EKF:
 The beauty of Kalman Filter design is that the update step can be different for different sensors. For predicted state mean and covariance, EKF uses a Jacobian Transform for Radar data but UKF uses augmented sigma points passed through non-linear functions.
 
 ## UKF Filter Tuning
-For process noise covariance matrix, I did a binary search to find the optimal longtidual acceleration and yaw acceleration standard deviation(0.40, 1.20) . These values made sense when I correlated to the acceleration calculated from velocity and yaw in the data input file. These values make sense because the object being tracked is a bicycle and not a motorized vehicle. 
+For process noise covariance matrix, I did a binary search to find the optimal longitudnal acceleration and yaw acceleration standard deviation(0.40, 1.20) . These values made sense when I correlated to the acceleration calculated from velocity and yaw in the data input file. These values make sense because the object being tracked is a bicycle and not a motorized vehicle. 
 
 I set the initial process covariance to be an identity matrix. This matrix can be tuned as well to lead to even better RMSE. 
 
@@ -157,7 +157,7 @@ I visualized how the filter performs with respect to various parameters predicte
 </p>
 
 <p align="center">
-   <img src="screenshots/Yaw Rate Comparison.png">
+   <img src="screenshots/YawRate Comparison.png">
 </p>
 <p align="center">
    <i>Yaw Rate</i>
