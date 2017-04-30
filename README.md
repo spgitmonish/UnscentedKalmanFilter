@@ -82,14 +82,14 @@ In this project, we have two sources of sensor data (Lidar and Radar). Lidar mea
 Radar data is in polar co-ordinates and without requiring non-linear to linear transforms, UKF outperforms EKF. Here is a comparison:
 
 <p align="center">
-   <img src="Screenshots/EKF.png">
+   <img src="screenshots/EKF.png">
 </p>
 <p align="center">
    <i>EKF</i>
 </p>
 
 <p align="center">
-   <img src="Screenshots/UKF Final.png">
+   <img src="screenshots/UKF Final.png">
 </p>
 <p align="center">
    <i>UKF</i>
@@ -98,14 +98,14 @@ Radar data is in polar co-ordinates and without requiring non-linear to linear t
 In fact, just using the individual sensors, UKF accuracy is better than EKF:
 
 <p align="center">
-   <img src="Screenshots/Lidar RMSE.png">
+   <img src="screenshots/Lidar RMSE.png">
 </p>
 <p align="center">
    <i>Lidar UKF</i>
 </p>
 
 <p align="center">
-   <img src="Screenshots/Radar RMSE.png">
+   <img src="screenshots/Radar RMSE.png">
 </p>
 <p align="center">
    <i>Radar UKF</i>
@@ -124,7 +124,7 @@ Normalized Innovation Squared(NIS) is an equation to measure the accuracy of the
 My UKF design did really well. Here is a visualization of Lidar NIS and Radar NIS over time.
 
 <p align="center">
-   <img src="Screenshots/Lidar NIS.png">
+   <img src="screenshots/Lidar NIS.png">
 </p>
 <p align="center">
    <i>NIS</i>
@@ -136,28 +136,28 @@ My UKF design did really well. Here is a visualization of Lidar NIS and Radar NI
 I visualized how the filter performs with respect to various parameters predicted. 
 
 <p align="center">
-   <img src="Screenshots/Position Comparison.png">
+   <img src="screenshots/Position Comparison.png">
 </p>
 <p align="center">
    <i>Position</i>
 </p>
 
 <p align="center">
-   <img src="Screenshots/Velocity Comparison.png">
+   <img src="screenshots/Velocity Comparison.png">
 </p>
 <p align="center">
    <i>Velocity</i>
 </p>
 
 <p align="center">
-   <img src="Screenshots/Yaw Comparison.png">
+   <img src="screenshots/Yaw Comparison.png">
 </p>
 <p align="center">
    <i>Yaw</i>
 </p>
 
 <p align="center">
-   <img src="Screenshots/Yaw Rate Comparison.png">
+   <img src="screenshots/Yaw Rate Comparison.png">
 </p>
 <p align="center">
    <i>Yaw Rate</i>
@@ -170,14 +170,14 @@ Except for yaw rate, UKF does really well in estimating position, velocity and y
 I also validated my model using the 2-D visualizer. The visualizer is supposed to show green triangles for the estimations made by my model but for some reason, there was none. The visualizer did display RMSE data. Compared to EKF, UKF definitely does predict velocity more accurately. 
 
 <p align="center">
-   <img src="Screenshots/UKF Simulation.png">
+   <img src="screenshots/UKF Simulation.png">
 </p>
 <p align="center">
    <i>UKF</i>
 </p>
 
 <p align="center">
-   <img src="Screenshots/EKF Simulation.png">
+   <img src="screenshots/EKF Simulation.png">
 </p>
 <p align="center">
    <i>EKF</i>
